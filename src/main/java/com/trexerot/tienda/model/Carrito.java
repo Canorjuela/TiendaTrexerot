@@ -6,13 +6,14 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@Table(name = "carrito")
 public class Carrito {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL)
     private List<ItemCarrito> items;
 
     @OneToOne(mappedBy = "carrito")

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 
 
 @Entity
+@Table(name = "usuario")
 public class Usuario {
 
     @Id
@@ -18,6 +19,12 @@ public class Usuario {
     @NotBlank(message = "El email es obligario")
     private String email;
     private  String rol;
+    @NotBlank(message = "La contraseña es obligatoria")
+    private String contrasena;
+    @NotBlank(message = "La dirección es obligatoria")
+    private String direccion;
+    @NotBlank(message = "El número telefonico es obligatorio")
+    private String telefono;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "carrito_id")
@@ -25,11 +32,13 @@ public class Usuario {
     private Carrito carrito;
 
     public Usuario(){}
-    public Usuario (String nombre, String email, String rol){
+    public Usuario (String nombre, String email, String rol,String contrasena,String direccion,String telefono){
         this.nombre =nombre;
         this.email=email;
         this.rol=rol;
-
+        this.contrasena=contrasena;
+        this.direccion=direccion;
+        this.telefono=telefono;
     }
 
     public Long getId() {
@@ -66,5 +75,29 @@ public class Usuario {
 
     public void setCarrito(Carrito carrito) {
         this.carrito = carrito;
+    }
+
+    public  String getContrasena() {
+        return contrasena;
+    }
+
+    public void setContrasena (String contrasena) {
+        this.contrasena = contrasena;
+    }
+
+    public  String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion( String direccion) {
+        this.direccion = direccion;
+    }
+
+    public  String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 }

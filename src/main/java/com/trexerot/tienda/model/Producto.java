@@ -3,6 +3,7 @@ package com.trexerot.tienda.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "producto")
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,6 +14,7 @@ public class Producto {
     private double precio;
     private String categoria;
     private int stock;
+    private String imagenUrl;
 
     public int getStock() {
         return stock;
@@ -60,5 +62,12 @@ public class Producto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getImagenUrl() {
+        return imagenUrl;
+    }
+    public void setImagenUrl(String imagenUrl) {
+        this.imagenUrl = imagenUrl;
     }
 }
