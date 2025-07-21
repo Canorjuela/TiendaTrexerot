@@ -2,6 +2,8 @@ package com.trexerot.tienda.model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "producto")
 public class Producto {
@@ -11,10 +13,13 @@ public class Producto {
 
     private String nombre;
     private String descripcion;
-    private double precio;
+    @Column(precision = 10, scale = 3)
+    private BigDecimal precio;
     private String categoria;
     private int stock;
     private String imagenUrl;
+    private String destacado;
+    private String enOferta;
 
     public int getStock() {
         return stock;
@@ -32,11 +37,11 @@ public class Producto {
         this.categoria = categoria;
     }
 
-    public double getPrecio() {
+    public BigDecimal getPrecio() {
         return precio;
     }
 
-    public void setPrecio(double precio) {
+    public void setPrecio(BigDecimal precio) {
         this.precio = precio;
     }
 
@@ -69,5 +74,21 @@ public class Producto {
     }
     public void setImagenUrl(String imagenUrl) {
         this.imagenUrl = imagenUrl;
+    }
+
+    public String getDestacado() {
+        return destacado;
+    }
+
+    public void setDestacado(String destacado) {
+        this.destacado = destacado;
+    }
+
+    public String getEnOferta() {
+        return enOferta;
+    }
+
+    public void setEnOferta(String enOferta) {
+        this.enOferta = enOferta;
     }
 }

@@ -29,4 +29,12 @@ public class ProductoService {
     public void eliminar(Long id) {
         repository.deleteById(id);
     }
+
+    public List<Producto> listarDestacados() {
+        return repository.findByDestacadoTrue();
+    }
+
+    public List<Producto> listarOfertas() {
+        return repository.findByEnOfertaTrue();
+    }
 }

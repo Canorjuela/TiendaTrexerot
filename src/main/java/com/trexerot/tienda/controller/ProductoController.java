@@ -51,4 +51,14 @@ public class ProductoController {
     public void eliminar(@PathVariable Long id) {
         service.eliminar(id);
     }
+    @GetMapping("/destacados")
+    public List<Producto> destacados() {
+        return service.listarDestacados();
+    }
+
+    @GetMapping("/ofertas")
+    public List<Producto> ofertas() {
+        return service.listarOfertas();
+    }
+
 }

@@ -2,10 +2,12 @@ package com.trexerot.tienda.service;
 
 import com.trexerot.tienda.model.Usuario;
 import com.trexerot.tienda.repository.UsuarioRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -22,7 +24,9 @@ public class UsuarioService {
         }
         return null;
     }
-
+    public Optional<Usuario> buscarPorId (Long id){
+        return usuarioRepository.findById(id);
+    }
     public List<Usuario> listar (){
         return usuarioRepository.findAll();
     }
@@ -33,4 +37,8 @@ public class UsuarioService {
         }
         return false;
     }
+    public Usuario actualizar(Usuario usuario) {
+        return usuarioRepository.save(usuario);  // save() también sirve para actualizar si el ID ya existe
+    }
+
 }
