@@ -5,6 +5,7 @@ import com.trexerot.tienda.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,22 +23,23 @@ class UsuarioServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this); // Inicializa los mocks
+        MockitoAnnotations.openMocks(this);
 
         usuario = new Usuario();
         usuario.setId(1L);
         usuario.setNombre("Camila");
         usuario.setEmail("camila@mail.com");
         usuario.setContrasena("1234");
-        usuario.setDireccion("Mi calle");
+        usuario.setDireccion("Calle 1");
         usuario.setTelefono("123456789");
     }
 
     @Test
-    void testRegistrarUsuario() {
+    void testRegistrarUsuarioExitoso() {
+        when(usuarioRepository.existsByEmail(usuario.getEmail())).thenReturn(false);
         when(usuarioRepository.save(usuario)).thenReturn(usuario);
 
-        Usuario resultado = usuarioService.registar(usuario);
+        Usuario resultado = usuarioService.registrar(usuario);
 
         assertNotNull(resultado);
         assertEquals("Camila", resultado.getNombre());
@@ -45,26 +47,47 @@ class UsuarioServiceTest {
     }
 
     @Test
+    void testRegistrarUsuarioDuplicado() {
+        when(usuarioRepository.existsByEmail(usuario.getEmail())).thenReturn(true);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            usuarioService.registrar(usuario);
+        });
+
+        assertEquals("Ya existe un usuario con ese correo.", ex.getMessage());
+        verify(usuarioRepository, never()).save(any());
+    }
+
+    @Test
     void testLoginExitoso() {
-        when(usuarioRepository.findByEmail("camila@mail.com")).thenReturn(usuario);
+        when(usuarioRepository.findByEmail("camila@mail.com")).thenReturn(Optional.of(usuario));
 
-        Usuario login = usuarioService.login("camila@mail.com", "1234");
+        Optional<Usuario> login = usuarioService.login("camila@mail.com", "1234");
 
-        assertNotNull(login);
-        assertEquals("Camila", login.getNombre());
+        assertTrue(login.isPresent());
+        assertEquals("Camila", login.get().getNombre());
     }
 
     @Test
-    void testLoginFallido() {
-        when(usuarioRepository.findByEmail("camila@mail.com")).thenReturn(usuario);
+    void testLoginFallidoContraseñaIncorrecta() {
+        when(usuarioRepository.findByEmail("camila@mail.com")).thenReturn(Optional.of(usuario));
 
-        Usuario login = usuarioService.login("camila@mail.com", "wrong");
+        Optional<Usuario> login = usuarioService.login("camila@mail.com", "incorrecta");
 
-        assertNull(login);
+        assertTrue(login.isEmpty());
     }
 
     @Test
-    void testBuscarPorId() {
+    void testLoginFallidoEmailNoExistente() {
+        when(usuarioRepository.findByEmail("otro@mail.com")).thenReturn(Optional.empty());
+
+        Optional<Usuario> login = usuarioService.login("otro@mail.com", "1234");
+
+        assertTrue(login.isEmpty());
+    }
+
+    @Test
+    void testBuscarPorIdExistente() {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
 
         Optional<Usuario> resultado = usuarioService.buscarPorId(1L);
@@ -74,16 +97,26 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void testListar() {
+    void testBuscarPorIdInexistente() {
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.empty());
+
+        Optional<Usuario> resultado = usuarioService.buscarPorId(2L);
+
+        assertFalse(resultado.isPresent());
+    }
+
+    @Test
+    void testListarUsuarios() {
         when(usuarioRepository.findAll()).thenReturn(List.of(usuario));
 
         List<Usuario> lista = usuarioService.listar();
 
         assertEquals(1, lista.size());
+        assertEquals("Camila", lista.get(0).getNombre());
     }
 
     @Test
-    void testEliminarExistente() {
+    void testEliminarUsuarioExistente() {
         when(usuarioRepository.existsById(1L)).thenReturn(true);
 
         boolean eliminado = usuarioService.eliminar(1L);
@@ -93,7 +126,7 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void testEliminarInexistente() {
+    void testEliminarUsuarioInexistente() {
         when(usuarioRepository.existsById(2L)).thenReturn(false);
 
         boolean eliminado = usuarioService.eliminar(2L);
@@ -103,12 +136,25 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void testActualizar() {
+    void testActualizarUsuarioExistente() {
+        when(usuarioRepository.existsById(usuario.getId())).thenReturn(true);
         when(usuarioRepository.save(usuario)).thenReturn(usuario);
 
         Usuario actualizado = usuarioService.actualizar(usuario);
 
         assertNotNull(actualizado);
         assertEquals("Camila", actualizado.getNombre());
+    }
+
+    @Test
+    void testActualizarUsuarioInexistente() {
+        when(usuarioRepository.existsById(usuario.getId())).thenReturn(false);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            usuarioService.actualizar(usuario);
+        });
+
+        assertEquals("El usuario no existe.", ex.getMessage());
+        verify(usuarioRepository, never()).save(any());
     }
 }
