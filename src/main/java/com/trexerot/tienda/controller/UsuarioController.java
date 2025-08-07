@@ -9,10 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -22,54 +19,70 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    // Registro
+    // 🟢 Registro
     @PostMapping("/registro")
-    public Usuario registrar(@Valid @RequestBody Usuario usuario) {
-        return usuarioService.registar(usuario);
-    }
-
-    // Login
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO datos) {
-        Usuario usuario = usuarioService.login(datos.getEmail(), datos.getContrasena());
-        if (usuario != null) {
-            return ResponseEntity.ok(usuario);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email o contraseña incorrectos");
+    public ResponseEntity<?> registrar(@Valid @RequestBody Usuario usuario) {
+        try {
+            Usuario nuevo = usuarioService.registrar(usuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("mensaje", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 
-    // Listar todos los usuarios
+    // 🔐 Login
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginDTO datos) {
+        Optional<Usuario> usuario = usuarioService.login(datos.getEmail(), datos.getContrasena());
+        if (usuario.isPresent()) {
+            return ResponseEntity.ok(usuario.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("mensaje", "Email o contraseña incorrectos"));
+        }
+    }
+
+    // 📄 Listar todos
     @GetMapping
     public List<Usuario> listar() {
         return usuarioService.listar();
     }
 
-    // Buscar usuario por ID
+    // 🔍 Buscar por ID
     @GetMapping("/{id}")
-    public Optional<Usuario> buscarPorId(@PathVariable Long id) {
-        return usuarioService.buscarPorId(id);
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        Optional<Usuario> usuario = usuarioService.buscarPorId(id);
+        if (usuario.isPresent()) {
+            return ResponseEntity.ok(usuario.get());
+        } else {
+            Map<String, String> error = new HashMap<>();
+            error.put("mensaje", "Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
     }
 
-    // Eliminar usuario por ID
+
+    // ❌ Eliminar usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
         boolean eliminado = usuarioService.eliminar(id);
         if (eliminado) {
-            return ResponseEntity.ok("Usuario eliminado");
+            return ResponseEntity.ok(Collections.singletonMap("mensaje", "Usuario eliminado"));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("mensaje", "Usuario no encontrado"));
         }
     }
 
-    // Actualizar usuario por ID
+    // ✏️ Actualizar usuario
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, String>> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
         Optional<Usuario> existente = usuarioService.buscarPorId(id);
         if (existente.isEmpty()) {
-            Map<String, String> error = new HashMap<>();
-            error.put("mensaje", "Usuario no encontrado");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("mensaje", "Usuario no encontrado"));
         }
 
         Usuario usuario = existente.get();
@@ -78,11 +91,12 @@ public class UsuarioController {
         usuario.setTelefono(usuarioActualizado.getTelefono());
         usuario.setContrasena(usuarioActualizado.getContrasena());
 
-        usuarioService.registar(usuario);
-
-        Map<String, String> respuesta = new HashMap<>();
-        respuesta.put("mensaje", "Usuario actualizado correctamente");
-        return ResponseEntity.ok(respuesta);
+        try {
+            Usuario actualizado = usuarioService.actualizar(usuario);
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("mensaje", e.getMessage()));
+        }
     }
-
 }
