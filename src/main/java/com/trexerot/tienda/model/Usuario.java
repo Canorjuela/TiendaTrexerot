@@ -51,14 +51,12 @@ public class Usuario {
     private LocalDateTime fechaRegistro = LocalDateTime.now(); // Se asigna automáticamente
 
     @Column(nullable = false)
-    private boolean activo = true; // Por si quieres desactivar la cuenta sin eliminarla
+    private boolean activo = true; //desactivar la cuenta sin eliminarla
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "carrito_id")
-    @JsonBackReference // Para evitar bucles infinitos al serializar
+    @JsonBackReference // Evitar bucles infinitos al serializar
     private Carrito carrito;
-
-    // ----- Constructores -----
 
     public Usuario() {
     }
@@ -72,8 +70,6 @@ public class Usuario {
         this.direccion = direccion;
         this.telefono = telefono;
     }
-
-    // ----- Getters y Setters -----
 
     public Long getId() {
         return id;
